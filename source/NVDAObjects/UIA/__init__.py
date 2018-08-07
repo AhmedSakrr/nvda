@@ -872,6 +872,19 @@ class UIA(Window):
 			clsList.append(WpfTextView)
 		elif UIAClassName=="NetUIDropdownAnchor":
 			clsList.append(NetUIDropdownAnchor)
+		elif self.windowClassName == "EXCEL6" and self.role == controlTypes.ROLE_PANE:
+			from .excel import BadExcelFormulaEdit
+			clsList.append(BadExcelFormulaEdit)
+		elif self.windowClassName == "EXCEL7":
+			if self.role in (controlTypes.ROLE_DATAITEM, controlTypes.ROLE_HEADERITEM):
+				from .excel import ExcelCell
+				clsList.append(ExcelCell)
+			elif self.role == controlTypes.ROLE_DATAGRID:
+				from .excel import ExcelWorksheet
+				clsList.append(ExcelWorksheet)
+			elif self.role == controlTypes.ROLE_EDITABLETEXT:
+				from .excel import CellEdit
+				clsList.append(CellEdit)
 		elif self.TextInfo == UIATextInfo and (
 			UIAClassName == '_WwG'
 			or self.windowClassName == '_WwG'
@@ -1169,7 +1182,11 @@ class UIA(Window):
 		return self.UIASelectionItemPattern
 
 	def _get_UIATextPattern(self):
-		self.UIATextPattern=self._getUIAPattern(UIAHandler.UIA_TextPatternId,UIAHandler.IUIAutomationTextPattern,cache=True)
+		self.UIATextPattern = self._getUIAPattern(
+			UIAHandler.UIA_TextPatternId,
+			UIAHandler.IUIAutomationTextPattern,
+			cache=False
+		)
 		return self.UIATextPattern
 
 	def _get_UIATextEditPattern(self):
@@ -1247,7 +1264,10 @@ class UIA(Window):
 			# #11445: due to timing errors, elements will be instantiated with no automation Id present.
 			return ""
 
-	def _get_name(self):
+	#: Typing info for auto property _get_name()
+	name: str
+
+	def _get_name(self) -> str:
 		try:
 			return self._getUIACacheablePropertyValue(UIAHandler.UIA_NamePropertyId)
 		except COMError:

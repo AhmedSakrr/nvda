@@ -3,6 +3,7 @@
 # See the file COPYING for more details.
 # Copyright (C) 2018-2021 NV Access Limited
 
+import UIAHandler
 import controlTypes
 from . import UIA
 
@@ -14,10 +15,68 @@ class ExcelCell(UIA):
 	rowHeaderText = None
 	columnHeaderText = None
 
+	def _hasSelection(self):
+		return (
+			self.selectionContainer
+			and 1 < self.selectionContainer.getSelectedItemsCount()
+		)
+
+	def _get_value(self):
+		if self._hasSelection():
+			return
+		return super().value
+
 	def _get_description(self):
+		if self._hasSelection():
+			return
 		return self.UIAElement.currentItemStatus
 
 	def _get_cellCoordsText(self):
+		if self._hasSelection():
+			sc = self._getUIACacheablePropertyValue(
+				UIAHandler.UIA_SelectionItemSelectionContainerPropertyId
+			).QueryInterface(
+				UIAHandler.IUIAutomationElement
+			)
+
+			firstSelected = sc.GetCurrentPropertyValue(
+				UIAHandler.UIA_Selection2FirstSelectedItemPropertyId
+			).QueryInterface(
+				UIAHandler.IUIAutomationElement
+			)
+
+			firstAddress = firstSelected.GetCurrentPropertyValue(
+				UIAHandler.UIA_NamePropertyId
+			).replace('"', '')
+
+			firstValue = firstSelected.GetCurrentPropertyValue(
+				UIAHandler.UIA_ValueValuePropertyId
+			)
+
+			lastSelected = sc.GetCurrentPropertyValue(
+				UIAHandler.UIA_Selection2LastSelectedItemPropertyId
+			).QueryInterface(
+				UIAHandler.IUIAutomationElement
+			)
+
+			lastAddress = lastSelected.GetCurrentPropertyValue(
+				UIAHandler.UIA_NamePropertyId
+			).replace('"', '')
+
+			lastValue = lastSelected.GetCurrentPropertyValue(
+				UIAHandler.UIA_ValueValuePropertyId
+			)
+
+			return pgettext(
+				"excel-UIA",
+				# Translators: Excel, report range of cell coordinates
+				"{firstAddress} {firstValue} through {lastAddress} {lastValue}"
+			).format(
+				firstAddress=firstAddress,
+				firstValue=firstValue,
+				lastAddress=lastAddress,
+				lastValue=lastValue
+			)
 		name = super().name
 		# Later builds of Excel 2016 quote the letter coordinate.
 		# We don't want the quotes.

@@ -446,15 +446,20 @@ class NVDAObject(documentBase.TextContainerObject, baseObject.ScriptableObject, 
 			return f"{braille.roleLabels[controlTypes.ROLE_LANDMARK]} {braille.landmarkLabels[self.landmark]}"
 		return self.roleText
 
-	def _get_value(self):
-		"""The value of this object (example: the current percentage of a scrollbar, the selected option in a combo box).
-		@rtype: str
+	#: Typing information for auto property _get_value
+	value: str
+
+	def _get_value(self) -> str:
+		"""The value of this object
+		(example: the current percentage of a scrollbar, the selected option in a combo box).
 		"""   
 		return ""
 
-	def _get_description(self):
+	#: Typing information for auto property _get_description
+	description: str
+
+	def _get_description(self) -> str:
 		"""The description or help text of this object.
-		@rtype: str
 		"""
 		return ""
 
